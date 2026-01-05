@@ -9,16 +9,36 @@ const register = async (req, res) => {
             password
         })
 
-       await newUser.save();
+        await newUser.save();
 
         res.status(200).json({
             message: "user register successfully",
             newUser
-        }) 
- 
+        })
+
     } catch (error) {
         console.log(error)
-    } 
+    }
 }
 
-module.exports = { register }
+
+const login = async (req, res) => {
+    const { email, password } = req.body;
+
+    const user = await User.findOne({email})
+    if (!user) {
+        res.status(404).json({
+            message: "user not found !"
+        })
+    }
+    if (password !== user.password) {
+        res.status(500).json({
+            message: "invalid credentials !!!"
+        })
+    }
+    res.status(200).json({
+        message: "user loggedin successfully."
+    });
+}
+
+module.exports = { register, login }
