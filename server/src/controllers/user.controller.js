@@ -51,21 +51,21 @@ const register = async (req, res) => {
     try {
         const { username, email, password } = req.body;
 
-        const isExists =await User.findOne({ email })
+        const isExists = await User.findOne({ email })
         if (isExists) {
-           return res.status(409).json({
+            return res.status(409).json({
                 message: "user exists already."
             })
         }
 
         if (!username || !email || !password) {
-           return res.status(400).json({
+            return res.status(400).json({
                 message: "all fields are required"
             })
         }
 
 
-        const hashedPassword = await bcrypt.hash(password , 10)
+        const hashedPassword = await bcrypt.hash(password, 10)
 
         const newUser = new User({
             username,
@@ -87,10 +87,38 @@ const register = async (req, res) => {
 
 }
 
- 
+
 
 const login = async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        if (!email || !password) {
+            return res.status(400).json({
+                message: "all fileds are required"
+            });
+        }
+        const isUser = await User.findOne({ email })
 
+        if (!isUser) {
+            return res.status(404).json({
+                message: "user not exists, please register"
+            })
+        }
+
+        const userPassword = await bcrypt.compare(password, isUser.password)
+
+        if (!userPassword) {
+            return res.status(400).json({
+                message: "invalid credentials"
+            })
+        }
+
+        res.status(200).json({
+            message: "user loggedin successfully."
+        })
+    } catch (error) {
+        console.log(error)
+    }
 }
- 
+
 module.exports = { register, login }
