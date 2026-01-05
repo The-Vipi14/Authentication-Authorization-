@@ -174,10 +174,41 @@ const register = async (req, res) => {
     } catch (error) {
         console.log(error)
     }
-
 }
 const login = async (req, res) => {
+    const { email, password } = req.body
 
+    if (!email || !password) {
+        return res.status(400).json({
+            message: "all credentials are required"
+        });
+    }
+
+    const isUser = await User.findOne({ email })
+
+    if (!isUser) {
+        return res.status(404).json({
+            message: "not found"
+        })
+    }
+    const pass = await bcrypt.compare(password, isUser.password)
+
+    if (!pass) {
+        return res.status(400).json({
+            message: "wrong password"
+        })
+    }
+
+    const token = jwt.sign({ email },
+        process.env.JWT_SECURITY,
+        { expiresIn: "1d" }
+    )
+
+    res.cookie("token", token, { httpOnly: true });
+
+    res.status(200).json({
+        message: "user logged in"
+    })
 }
 
 module.exports = { register, login }
