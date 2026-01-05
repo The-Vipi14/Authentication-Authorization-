@@ -1,6 +1,6 @@
 const User = require('../models/user.model')
 const bcrypt = require('bcryptjs');
-
+const jwt = require('jsonwebtoken')
 
 // const register = async (req, res) => {
 //     try {
@@ -44,8 +44,93 @@ const bcrypt = require('bcryptjs');
 // }
 
 
-// ================ security practices ========================= //
 
+
+
+
+
+// ================ security practices (hashed password)========================= //
+
+
+// const register = async (req, res) => {
+//     try {
+// const { username, email, password } = req.body;
+
+// const isExists = await User.findOne({ email })
+// if (isExists) {
+//     return res.status(409).json({
+//         message: "user exists already."
+//     })
+// }
+
+// if (!username || !email || !password) {
+//     return res.status(400).json({
+//         message: "all fields are required"
+//     })
+// }
+
+
+// const hashedPassword = await bcrypt.hash(password, 10)
+
+// const newUser = new User({
+//     username,
+//     email,
+//     password: hashedPassword
+// })
+// await newUser.save();
+
+//         res.status(200).json({
+//             message: "user registerd",
+//             newUser
+//         })
+//     } catch (error) {
+//         console.log(error)
+//         res.status(500).json({
+//             message: "server crached !!!"
+//         });
+//     }
+
+// }
+
+
+
+// const login = async (req, res) => {
+//     try {
+//         const { email, password } = req.body;
+//         if (!email || !password) {
+//             return res.status(400).json({
+//                 message: "all fileds are required"
+//             });
+//         }
+//         const isUser = await User.findOne({ email })
+
+//         if (!isUser) {
+//             return res.status(404).json({
+//                 message: "user not exists, please register"
+//             })
+//         }
+
+//         const userPassword = await bcrypt.compare(password, isUser.password)
+
+//         if (!userPassword) {
+//             return res.status(400).json({
+//                 message: "invalid credentials"
+//             })
+//         }
+
+//         res.status(200).json({
+//             message: "user loggedin successfully."
+//         })
+//     } catch (error) {
+//         console.log(error)
+//     }
+// }
+
+
+
+
+
+// ==================== cookie and jwt ================ //
 
 const register = async (req, res) => {
     try {
@@ -64,7 +149,6 @@ const register = async (req, res) => {
             })
         }
 
-
         const hashedPassword = await bcrypt.hash(password, 10)
 
         const newUser = new User({
@@ -74,51 +158,26 @@ const register = async (req, res) => {
         })
         await newUser.save();
 
+        const token = jwt.sign(
+            { email },
+            process.env.JWT_SECURITY,
+            { expiresIn: "1d" }
+        )
+
+        res.cookie("token", token, {
+            httpOnly: true
+        })
+
         res.status(200).json({
-            message: "user registerd",
-            newUser
+            message: "user registerd.", newUser
         })
     } catch (error) {
         console.log(error)
-        res.status(500).json({
-            message: "server crached !!!"
-        });
     }
 
 }
-
-
-
 const login = async (req, res) => {
-    try {
-        const { email, password } = req.body;
-        if (!email || !password) {
-            return res.status(400).json({
-                message: "all fileds are required"
-            });
-        }
-        const isUser = await User.findOne({ email })
 
-        if (!isUser) {
-            return res.status(404).json({
-                message: "user not exists, please register"
-            })
-        }
-
-        const userPassword = await bcrypt.compare(password, isUser.password)
-
-        if (!userPassword) {
-            return res.status(400).json({
-                message: "invalid credentials"
-            })
-        }
-
-        res.status(200).json({
-            message: "user loggedin successfully."
-        })
-    } catch (error) {
-        console.log(error)
-    }
 }
 
 module.exports = { register, login }
