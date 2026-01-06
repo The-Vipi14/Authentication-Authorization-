@@ -4,6 +4,26 @@ const Login = () => {
   const [email, setemail] = useState("");
   const [password, setPassword] = useState("");
 
+  // const handleLogin = async (e) => {
+  //   e.preventDefault();
+
+  //   const res = await fetch("http://localhost:5000/api/user/login", {
+  //     method: "POST",
+  //     headers: {
+  //       "content-type": "application/json",
+  //     },
+  //     body: JSON.stringify({
+  //       email,
+  //       password,
+  //     }),
+  //   });
+
+  //   const data = await res.json();
+
+  //   alert(data.message);
+  //   console.log(data);
+  // };
+
   const handleLogin = async (e) => {
     e.preventDefault();
 
@@ -16,6 +36,7 @@ const Login = () => {
         email,
         password,
       }),
+      credentials:"include"
     });
 
     const data = await res.json();
