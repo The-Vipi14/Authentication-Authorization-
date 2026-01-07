@@ -1,4 +1,3 @@
-
 import { createContext, useEffect, useState } from "react";
 import axios from "axios";
 
@@ -11,9 +10,17 @@ export const AuthContextProvider = ({ children }) => {
   useEffect(() => {
     axios
       .get("http://localhost:5000/api/user/me", { withCredentials: true })
-      .then(setIsAuth(true))
-      .then(setLoading(false))
-      .catch((err) => console.log(err));
+      .then((res) => {
+        if (res.data.authenticated) {
+          setIsAuth(true);
+          console.log(isAuth);
+          console.log(res.data.authenticated);
+        } else {
+          setIsAuth(false);
+        }
+      })
+      .catch((err) => console.log(err))
+      .finally(() => setLoading(false));
   }, []);
 
   return (
