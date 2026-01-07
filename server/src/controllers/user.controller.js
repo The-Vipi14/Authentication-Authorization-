@@ -135,7 +135,11 @@ const jwt = require('jsonwebtoken')
 const register = async (req, res) => {
     try {
         const { username, email, password } = req.body;
-
+        if (!username || !email || !password) {
+            return res.status(400).json({
+                message: "all fields are required"
+            })
+        }
         const isExists = await User.findOne({ email })
         if (isExists) {
             return res.status(409).json({
@@ -143,11 +147,7 @@ const register = async (req, res) => {
             })
         }
 
-        if (!username || !email || !password) {
-            return res.status(400).json({
-                message: "all fields are required"
-            })
-        }
+
 
         const hashedPassword = await bcrypt.hash(password, 10)
 
@@ -176,39 +176,63 @@ const register = async (req, res) => {
     }
 }
 const login = async (req, res) => {
-    const { email, password } = req.body
+    try {
+        const { email, password } = req.body
 
-    if (!email || !password) {
-        return res.status(400).json({
-            message: "all credentials are required"
-        });
-    }
+        if (!email || !password) {
+            return res.status(400).json({
+                message: "all credentials are required"
+            });
+        }
 
-    const isUser = await User.findOne({ email })
+        const isUser = await User.findOne({ email })
 
-    if (!isUser) {
-        return res.status(404).json({
-            message: "not found"
+        if (!isUser) {
+            return res.status(404).json({
+                message: "not found"
+            })
+        }
+        const pass = await bcrypt.compare(password, isUser.password)
+
+        if (!pass) {
+            return res.status(400).json({
+                message: "wrong password"
+            })
+        }
+
+        const token = jwt.sign({ email },
+            process.env.JWT_SECURITY,
+            { expiresIn: "1d" }
+        )
+
+        res.cookie("token", token, { httpOnly: true });
+
+        res.status(200).json({
+            message: "user logged in"
         })
+    } catch (error) {
+        console.log(error)
     }
-    const pass = await bcrypt.compare(password, isUser.password)
-
-    if (!pass) {
-        return res.status(400).json({
-            message: "wrong password"
-        })
-    }
-
-    const token = jwt.sign({ email },
-        process.env.JWT_SECURITY,
-        { expiresIn: "1d" }
-    )
-
-    res.cookie("token", token, { httpOnly: true });
-
-    res.status(200).json({
-        message: "user logged in"
-    })
+}
+const profile = async (req, res) => {
+    res.status(200).json({ user: req.user })
 }
 
-module.exports = { register, login }
+const isLoggedIn = (req, res) => {
+
+    try {
+        const token = req.cookies.token;
+        if (!token) return res.status(400).json({
+            authenticated: false,
+            message: "didn't get token"
+        })
+        const user = jwt.verify(token, process.env.JWT_SECURITY)
+
+        res.status(200).json({ authenticated: true })
+    } catch (error) {
+        res.status(400).json({ authenticated: false })
+    }
+}
+
+
+module.exports = { register, login, profile, isLoggedIn }
