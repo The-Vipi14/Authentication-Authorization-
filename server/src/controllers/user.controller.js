@@ -200,7 +200,7 @@ const login = async (req, res) => {
             })
         }
 
-        const token = jwt.sign({ email },
+        const token = jwt.sign({ username: isUser.username, email },
             process.env.JWT_SECURITY,
             { expiresIn: "1d" }
         )
@@ -214,6 +214,17 @@ const login = async (req, res) => {
         console.log(error)
     }
 }
+
+const logout = (req, res) => {
+    res.clearCookie("token", {
+        httpOnly: true,
+        secure: false
+    });
+    res.status(200).json({
+        message: "logged out successfully."
+    });
+}
+
 const profile = async (req, res) => {
     res.status(200).json({ user: req.user })
 }
@@ -222,17 +233,16 @@ const isLoggedIn = (req, res) => {
 
     try {
         const token = req.cookies.token;
-        if (!token) return res.status(400).json({
+        if (!token) return res.status(401).json({
             authenticated: false,
             message: "didn't get token"
         })
         const user = jwt.verify(token, process.env.JWT_SECURITY)
 
-        res.status(200).json({ authenticated: true })
+        res.status(200).json({ authenticated: true, user })
     } catch (error) {
         res.status(400).json({ authenticated: false })
     }
 }
 
-
-module.exports = { register, login, profile, isLoggedIn }
+module.exports = { register, login, profile, isLoggedIn, logout }
