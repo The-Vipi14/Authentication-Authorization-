@@ -126,10 +126,6 @@ const jwt = require('jsonwebtoken')
 //     }
 // }
 
-
-
-
-
 // ==================== cookie and jwt ================ //
 
 const register = async (req, res) => {
@@ -244,5 +240,71 @@ const isLoggedIn = (req, res) => {
         res.status(400).json({ authenticated: false })
     }
 }
+
+
+
+// const register = async (req, res) => {
+//     try {
+//         const { username, email, password } = req.body;
+
+//         const isAlrady = await User.findOne({ email })
+//         if (isAlrady) {
+//             return res.json({
+//                 message: "user already exists, you can login"
+//             })
+//         }
+//         const hashedPassword = await bcrypt.hash(password, 10)
+
+//         const newUser = new User({
+//             username,
+//             email,
+//             password: hashedPassword
+//         })
+//         await newUser.save();
+
+//         const token = jwt.sign({ email },
+//             process.env.JWT_SECURITY,
+//             { expiresIn: "1d" }
+//         )
+
+//         res.cookie("token", token, {
+//             httpOnly: true
+//         })
+
+//         res.status(200).json({
+//             message: "user registered successfully"
+//         })
+//     } catch (error) {
+//         console.log(error)
+//     }
+// }
+
+// const login = async (req, res) => {
+//     try {
+//         const { email, password } = req.body;
+//         const isUser = await User.findOne({ email })
+//         if (!isUser) {
+//             return res.status(404).json({
+//                 message: "user not found, login please."
+//             })
+//         }
+
+//         const checkedPassword = await bcrypt.compare(password, isUser.password)
+
+//         if (!checkedPassword) {
+//             return res.json({
+//                 message: "Invalid credentials"
+//             })
+//         }
+
+//         const token = jwt.sign({ email }, process.env.JWT_SECURITY, { expiresIn: "1d" })
+//         res.cookie("token", token, { httpOnly: true })
+//         res.status(200).json({
+//             message: "loggin successfully"
+//         })
+//     } catch (error) {
+//         console.log(error)
+//     }
+// }
 
 module.exports = { register, login, profile, isLoggedIn, logout }

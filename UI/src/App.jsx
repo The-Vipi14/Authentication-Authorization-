@@ -4,11 +4,13 @@ import { AuthContextProvider } from "./context/AuthContextProvider";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Home from "./pages/Home";
+import Profile from "./pages/Profile";
 
 const App = () => {
   return (
-    <AuthContextProvider>
-      <BrowserRouter>
+    <BrowserRouter>
+      {" "}
+      <AuthContextProvider>
         <Routes>
           <Route
             path="/"
@@ -18,11 +20,19 @@ const App = () => {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <Profile />
+              </ProtectedRoute>
+            }
+          />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Signup />} />
         </Routes>
-      </BrowserRouter>
-    </AuthContextProvider>
+      </AuthContextProvider>
+    </BrowserRouter>
   );
 };
 
